@@ -8,32 +8,40 @@ namespace Summing_Matrices
     {
         static Random randNum = new Random();
 
-        static void NullMatrix(int[,] m, int row, int col)
+        static void NullMatrix(int[,] a, int row, int col)
         {
             for (int i = 0; i < row; i++)
+            {
                 for (int j = 0; j < col; j++)
-                    m[i, j] = 0;
+                {
+                    a[i, j] = 0;
+                }
+            }
         }
 
         static void RandomMatrix(int[,] a, int row, int col)
         {
             for (int i = 0; i < row; i++)
-                for (int j = 0; j < col; j++)
-                    a[i, j] = randNum.Next(0, 100);
-        }
-
-        static void Sum(int[,] firstMatrix, int[,] secondMatrix, int[,] resMatrix, int col, int fromRow, int toRow)
-        {
-            for (int i = fromRow; i < toRow; ++i)
             {
-                for (int j = 0; j < col; ++j)
+                for (int j = 0; j < col; j++)
                 {
-                    resMatrix[i, j] += firstMatrix[i, j] + secondMatrix[i, j];
+                    a[i, j] = randNum.Next(0, 100);
                 }
             }
         }
 
-        static void Threads(int[,] a, int[,] b, int[,] res, int row, int col, int count)
+        static void Sum(int[,] first, int[,] second, int[,] res, int col, int from, int to)
+        {
+            for (int i = from; i < to; ++i)
+            {
+                for (int j = 0; j < col; ++j)
+                {
+                    res[i, j] += first[i, j] + second[i, j];
+                }
+            }
+        }
+
+        static void Threads(int[,] first, int[,] second, int[,] res, int row, int col, int count)
         {
             Thread[] threads = new Thread[count];
             int step = row / count;
@@ -45,10 +53,10 @@ namespace Summing_Matrices
                 int t = to;
                 if (i == count - 1 && row % count != 0)
                 {
-                    threads[i] = new Thread(() => Sum(a, b, res, col, f, row));
+                    threads[i] = new Thread(() => Sum(first, second, res, col, f, row));
                     break;
                 }
-                threads[i] = new Thread(() => Sum(a, b, res, col, f, t));
+                threads[i] = new Thread(() => Sum(first, second, res, col, f, t));
 
                 from += step;
                 to += step;
