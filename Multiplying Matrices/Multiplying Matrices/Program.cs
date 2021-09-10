@@ -86,22 +86,7 @@ namespace Multiplying_Matrices
             NullMatrix(resultMatrix, row, col);
             RandomMatrix(firstMatrix, row, col);
             RandomMatrix(secondMatrix, row, col);
-            //for (int i = 0; i < row; i++)
-            //{
-            //    for (int j = 0; j < col; j++)
-            //    {
-            //        Console.Write("{0} ", firstMatrix[i, j]);
-            //    }
-            //    Console.WriteLine();
-            //}
-            //for (int i = 0; i < row; i++)
-            //{
-            //    for (int j = 0; j < col; j++)
-            //    {
-            //        Console.Write("{0} ", secondMatrix[i, j]);
-            //    }
-            //    Console.WriteLine();
-            //}
+            
             Stopwatch stopwatch = new Stopwatch();
 
             //1 thread
@@ -110,30 +95,6 @@ namespace Multiplying_Matrices
             stopwatch.Stop();
             TimeSpan t1 = stopwatch.Elapsed;
             Time(t1, 1);
-            //for (int i = 0; i < row; i++)
-            //{
-            //    for (int j = 0; j < col; j++)
-            //    {
-            //        Console.Write("{0} ", resultMatrix[i, j]);
-            //    }
-            //    Console.WriteLine();
-            //}
-            //Console.WriteLine("Hello!!!");
-
-            //NullMatrix(resultMatrix, row, col);
-            //stopwatch.Restart();
-            //Threads(firstMatrix, secondMatrix, resultMatrix, row, col, 3);
-            //stopwatch.Stop();
-            //for (int L = 0; L < row; L++)
-            //{ 
-            //    for (int j = 0; j < col; j++)
-            //    {
-            //        Console.Write("{0} ", resultMatrix[L, j]);
-            //    }
-            //    Console.WriteLine();
-            //}
-            //TimeSpan t2 = stopwatch.Elapsed;
-            //Time(t2, 3);
 
             //10 - 100
             for (int i = 10; i < 101; i += 10)
@@ -142,14 +103,7 @@ namespace Multiplying_Matrices
                 stopwatch.Restart();
                 Threads(firstMatrix, secondMatrix, resultMatrix, row, col, i);
                 stopwatch.Stop();
-                //for (int L = 0; L < row; L++)
-                //{ 
-                //    for (int j = 0; j < col; j++)
-                //    {
-                //        Console.Write("{0} ", resultMatrix[L, j]);
-                //    }
-                //    Console.WriteLine();
-                //}
+
                 TimeSpan t2 = stopwatch.Elapsed;
                 Time(t2, i);
             }
