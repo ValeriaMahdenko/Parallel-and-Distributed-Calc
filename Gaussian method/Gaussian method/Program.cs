@@ -9,6 +9,7 @@ namespace Gaussian_method
 {
     class Program
     {
+        const int size = 60;
 
         static Random randNum = new Random();
 
@@ -17,7 +18,7 @@ namespace Gaussian_method
             string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
                 t.Hours, t.Minutes, t.Seconds,
                 t.Milliseconds / 10);
-            Console.WriteLine("RunTime (" + k + "): " + elapsedTime);
+            Console.WriteLine("RunTime (" + k + "): \t" + elapsedTime);
         }
 
         static void Random(double[,] a, double[] b, int size)
@@ -40,28 +41,11 @@ namespace Gaussian_method
             }
         }
 
-        public static void ShowMatrix(double[,] A, int Size, double[] B)
+        static void Acceleration(TimeSpan t1, TimeSpan t2, int count)
         {
-            for (int i = 0; i < Size; i++)
-            {
-                for (int j = 0; j < Size; j++)
-                {
-                    Console.Write("{0:0.##} ", A[i, j]);
-                }
-                Console.Write("{0:0.##} ", B[i]);
-                Console.WriteLine();
-            }
-            Console.WriteLine();
-        }
-
-        public static void ShowRes(double[] X, int Size)
-        {
-            Console.WriteLine("res:");
-            for (int i = 0; i < Size; i++)
-            {
-                Console.Write("{0:0.##}  ", X[i]);
-            }
-            Console.WriteLine();
+            float accel = t1.Ticks / (float)t2.Ticks;
+            float effect = accel / count;
+            Console.WriteLine("Acceleration: \t" + accel + "\nEffectiveness: \t" + effect + "\n");
         }
 
         static void multiplyMatrixAndVec(double[,] matrix, double[] vec, double[] result, int size, int fromRow, int toRow)
@@ -109,7 +93,6 @@ namespace Gaussian_method
             }
             for (int i = 0; i < threadsCount; ++i)
             {
-
                 threadsArray[i].Join();
             }
         }
@@ -152,7 +135,6 @@ namespace Gaussian_method
                 {
                     matrixT[i, k] = -matrixA[i, k] / matrixA[k, k];
                 }
-                //ShowMatrix(matrixT, size, vectorB);
                 createThreadsForMatricesMult(matrixT, matrixA, matrixA, size, threadsCount);
                 createThreadsForMatrixAndVecMult(matrixT, vectorB, vectorB, size, threadsCount);
             }
@@ -171,7 +153,6 @@ namespace Gaussian_method
                 {
                     matrixV[i, k] = -matrixA[i, k];
                 }
-
                 createThreadsForMatricesMult(matrixV, matrixA, matrixA, size, threadsCount);
                 createThreadsForMatrixAndVecMult(matrixV, vectorB, vectorB, size, threadsCount);
             }
@@ -206,7 +187,6 @@ namespace Gaussian_method
                 from -= threadStep;
                 to -= threadStep;
             }
-
             for (int i = 0; i < 2 * threadsCount; ++i)
             {
                 threadsArray[i].Start();
@@ -215,7 +195,6 @@ namespace Gaussian_method
             {
                 threadsArray[i].Join();
             }
-            //Result
             for (int i = 0; i < size; ++i)
             {
                 result[i] = vectorB[i];
@@ -224,13 +203,9 @@ namespace Gaussian_method
 
         static void Main(string[] args)
         {
-            const int size = 50;
+
             double[,] A = new double[size, size];
             double[] B = new double[size];
-            /*double[,] A = { { 8, 9, 0},
-                             {4, 2, 0 },
-                             {8, 9, 3 }};
-            double[] B = { 8, 5, 4 };*/
             double[] Result = new double[size];
 
             Random(A, B, size);
@@ -243,8 +218,9 @@ namespace Gaussian_method
             stopwatch.Stop();
             TimeSpan t1 = stopwatch.Elapsed;
             Time(t1, 1);
-            //ShowRes(Result, size);
-            //10 - 100
+            Console.WriteLine();
+
+            //2 - 10
             for (int i = 2; i < 11; i += 1)
             {
                 NullVector(Result, size);
@@ -254,8 +230,8 @@ namespace Gaussian_method
 
                 TimeSpan t2 = stopwatch.Elapsed;
                 Time(t2, i);
+                Acceleration(t1, t2, i);
             }
-
         }
     }
 }
