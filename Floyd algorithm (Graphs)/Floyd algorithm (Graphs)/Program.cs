@@ -8,6 +8,7 @@ namespace Floyd_algorithm__Graphs_
     class Program
     {
         static Random randNum = new Random();
+        static int INF = 100000;
 
         public static void ShowMatrix(int[,] A, int Size)
         {
@@ -46,25 +47,27 @@ namespace Floyd_algorithm__Graphs_
             {
                 for (int j = 0; j < size; j++)
                 {
+                    int num = randNum.Next(1, 200);
                     if (i == j)
                     {
                         a[i, j] = 0;
                     }
                     else
                     {
-                        a[i, j] = randNum.Next(0, 100);
+                        a[i, j] = (num % 38 != 0 || num % 10 != 0) ? num : INF;
+
                     }
                 }
             }
         }
 
-        static void NullMatrix(int[,] a, int size)
+        static void MatrixCopy(int[,] a, int [,]b, int size)
         {
             for (int i = 0; i < size; i++)
             {
                 for (int j = 0; j < size; j++)
                 {
-                    a[i, j] = 0;
+                    a[i, j] = b[i, j];
                 }
             }
         }
@@ -84,16 +87,19 @@ namespace Floyd_algorithm__Graphs_
                 {
                     for (int j = 0; j < size; ++j)
                     {
-                        if (a[i, j] > a[i, k] + a[k, j])
-                            a[i, j] = a[i, k] + a[k, j];
+                        a[i, j] = Math.Min(a[i, j], a[i, k] + a[k, j]);
+
 
                     }
                 }
             }
         }
 
-        static void Threads(int[,] a, int size, int count=1)
+        static void FloydThreads(int [,]a, int size, int count)
         {
+            if (count > size)
+                count = size;
+
             Thread[] threads = new Thread[count];
             int step = size / count;
             int from = 0;
@@ -102,46 +108,50 @@ namespace Floyd_algorithm__Graphs_
             {
                 int f = from;
                 int t = to;
-                if (i == count - 1 && size% count != 0)
+                if (i == count - 1 && size % count != 0)
                 {
                     threads[i] = new Thread(() => Floyd(a, size, f, size));
                     break;
                 }
-                threads[i] = new Thread(() => Floyd(a, size, f, t));
-
+                threads[i] = new Thread(() => { Floyd(a, size, f, t); });
                 from += step;
                 to += step;
             }
+
             for (int i = 0; i < count; ++i)
             {
                 threads[i].Start();
             }
+            for (int i = 0; i < count; ++i)
+            {
+                threads[i].Join();
+            }
+            
         }
 
         static void Main(string[] args)
         {
-            const int size = 1500;
+            const int size = 800;
             int[,] Matrix = new int[size, size];
             int[,] Result = new int[size, size];
 
             RandomMatrix(Matrix, size);
+            MatrixCopy(Result, Matrix, size);
             Stopwatch stopwatch = new Stopwatch();
 
             //1 thread
-            Result = (int[,])Matrix.Clone();
             stopwatch.Start();
-            Floyd(Result, size, 0, size);
+            FloydThreads(Matrix, size, 1);
             stopwatch.Stop();
-
             TimeSpan t1 = stopwatch.Elapsed;
             Time(t1, 1);
 
             //10 - 100
             for (int i = 2; i < 21; i += 2)
             {
-                Result = (int[,])Matrix.Clone();
+                MatrixCopy(Matrix, Result, size);
                 stopwatch.Restart();
-                Threads(Result, size, i);
+                FloydThreads(Matrix, size, i);
                 stopwatch.Stop();
 
                 TimeSpan t2 = stopwatch.Elapsed;
