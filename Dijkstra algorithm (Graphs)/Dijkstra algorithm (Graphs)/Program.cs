@@ -1,14 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Diagnostics;
 
-
-namespace Floyd_algorithm__Graphs_
+namespace Dijkstra_algorithm__Graphs_
 {
     class Program
     {
         static Random randNum = new Random();
-
         public static void ShowMatrix(int[,] A, int Size)
         {
             for (int i = 0; i < Size; i++)
@@ -22,7 +23,7 @@ namespace Floyd_algorithm__Graphs_
             Console.WriteLine();
         }
 
-        public static void ShowRes(double[] X, int Size)
+        public static void ShowRes(int[] X, int Size)
         {
             Console.WriteLine("res:");
             for (int i = 0; i < Size; i++)
@@ -57,15 +58,11 @@ namespace Floyd_algorithm__Graphs_
                 }
             }
         }
-
-        static void NullMatrix(int[,] a, int size)
+        static void NullVector(int[] a, int size)
         {
             for (int i = 0; i < size; i++)
             {
-                for (int j = 0; j < size; j++)
-                {
-                    a[i, j] = 0;
-                }
+                a[i] = 0;
             }
         }
 
@@ -76,72 +73,96 @@ namespace Floyd_algorithm__Graphs_
             Console.WriteLine("Acceleration: \t" + accel + "\nEffectiveness: \t" + effect + "\n");
         }
 
-        static void Floyd(int[,] a, int size, int from, int to)
+        static int FindMin(int[] ways, bool[] visited, int size)
         {
-            for (int k = from; k < to; ++k)
-            {
-                for (int i = 0; i < size; ++i)
-                {
-                    for (int j = 0; j < size; ++j)
-                    {
-                        if (a[i, j] > a[i, k] + a[k, j])
-                            a[i, j] = a[i, k] + a[k, j];
+            int min = int.MaxValue;
+            int min_index = -1;
 
+            for (int i = 0; i < size; i++)
+            {
+                if (visited[i] == false && ways[i] <= min)
+                {
+                    min = ways[i];
+                    min_index = i;
+                }
+            }
+            return min_index;
+        }
+
+        static void Dijkstra(int[,] matrix, int[] ways, bool[] visited, int size, int from, int to)
+        {
+            for (int i = from; i < to; i++)
+            {
+                int pos = FindMin(ways, visited, size);
+                visited[pos] = true;
+
+                for (int j = 0; j < size; j++)
+                {
+                    if (!visited[j] && matrix[pos, j] != 0 && ways[pos] != int.MaxValue && ways[pos] + matrix[pos, j] < ways[j])
+                    {
+                        ways[j] = ways[pos] + matrix[pos, j];
                     }
                 }
             }
         }
 
-        static void Threads(int[,] a, int size, int count=1)
+        static void DijkstraThreads(int[,] matrix, int[] ways, int size, int count=1)
         {
-            Thread[] threads = new Thread[count];
-            int step = size / count;
-            int from = 0;
-            int to = step;
-            for (int i = 0; i < count; i++)
+            bool[] visited = new bool[size];
+            for (int i = 0; i < size; i++)
             {
-                int f = from;
-                int t = to;
-                if (i == count - 1 && size% count != 0)
-                {
-                    threads[i] = new Thread(() => Floyd(a, size, f, size));
-                    break;
-                }
-                threads[i] = new Thread(() => Floyd(a, size, f, t));
+                ways[i] = int.MaxValue;
+                visited[i] = false;
+            }
+            ways[0] = 0;
+            if (count > size)
+                count = size;
 
-                from += step;
-                to += step;
-            }
-            for (int i = 0; i < count; ++i)
+            int step = size / count;
+            Thread[] threads = new Thread[count];
+
+            for (int t = 0; t < count; t++)
             {
-                threads[i].Start();
+                int from = t * step;
+                int to = 0;
+
+                if (t + 1 == count)
+                    to = size;
+                else
+                    to = from + step;
+                threads[t] = new Thread(() => { Dijkstra(matrix, ways, visited, size, from, to); });
             }
+
+            for (int j = 0; j < count; ++j)
+                threads[j].Start();
+            for (int j = 0; j < count; ++j)
+                threads[j].Join();
         }
 
         static void Main(string[] args)
         {
-            const int size = 1500;
+            const int size = 10000;
             int[,] Matrix = new int[size, size];
-            int[,] Result = new int[size, size];
+            int[] Result = new int[size];
 
+            NullVector(Result, size);
             RandomMatrix(Matrix, size);
+
             Stopwatch stopwatch = new Stopwatch();
 
             //1 thread
-            Result = (int[,])Matrix.Clone();
             stopwatch.Start();
-            Floyd(Result, size, 0, size);
+            DijkstraThreads(Matrix, Result, size);
             stopwatch.Stop();
-
             TimeSpan t1 = stopwatch.Elapsed;
             Time(t1, 1);
 
             //10 - 100
-            for (int i = 2; i < 21; i += 2)
+            for (int i = 2; i < 17; i += 2)
             {
-                Result = (int[,])Matrix.Clone();
+                NullVector(Result, size);
                 stopwatch.Restart();
-                Threads(Result, size, i);
+                DijkstraThreads(Matrix, Result, size, i);
                 stopwatch.Stop();
 
                 TimeSpan t2 = stopwatch.Elapsed;
