@@ -88,8 +88,6 @@ namespace Floyd_algorithm__Graphs_
                     for (int j = 0; j < size; ++j)
                     {
                         a[i, j] = Math.Min(a[i, j], a[i, k] + a[k, j]);
-
-
                     }
                 }
             }
@@ -131,7 +129,7 @@ namespace Floyd_algorithm__Graphs_
 
         static void Main(string[] args)
         {
-            const int size = 800;
+            const int size = 1000;
             int[,] Matrix = new int[size, size];
             int[,] Result = new int[size, size];
 
@@ -147,7 +145,7 @@ namespace Floyd_algorithm__Graphs_
             Time(t1, 1);
 
             //10 - 100
-            for (int i = 2; i < 21; i += 2)
+            for (int i = 2; i < 17; i += 2)
             {
                 MatrixCopy(Matrix, Result, size);
                 stopwatch.Restart();
